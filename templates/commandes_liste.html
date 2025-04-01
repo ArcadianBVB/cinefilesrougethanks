@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Liste des Commandes</title>
+</head>
+<body>
+  <h1>Liste des Commandes & Proformas</h1>
+  <a href="/commandes/nouvelle">Nouvelle Commande</a>
+  <br><br>
+  <table border="1" cellpadding="5">
+    <tr>
+      <th>ID</th>
+      <th>Nom du Client</th>
+      <th>Montant Total</th>
+      <th>Date Commande</th>
+      <th>Statut</th>
+      <th>Actions</th>
+    </tr>
+    {% for commande in commandes %}
+    <tr>
+      <td>{{ commande[0] }}</td>
+      <td>{{ commande[1] }}</td>
+      <td>{{ commande[5] }}</td>
+      <td>{{ commande[9] }}</td>
+      <td>{{ commande[11] }}</td>
+      <td>
+        <a href="/commandes/view/{{ commande[0] }}">Voir</a> |
+        <a href="/commandes/changer_statut/{{ commande[0] }}/Payé">Marquer Payé</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

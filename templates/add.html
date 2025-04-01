@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Ajouter un contenu - Cinéfiles</title>
+</head>
+<body>
+    <h1>Ajouter un nouveau contenu</h1>
+    <form method="POST" action="/add">
+        <label for="titre">Titre :</label>
+        <input type="text" name="titre" id="titre" required><br><br>
+
+        <label for="type">Type :</label>
+        <select name="type" id="type" required>
+            <option value="Film">Film</option>
+            <option value="Série">Série</option>
+            <option value="Novelas">Novelas</option>
+            <option value="Dessin animé">Dessin animé</option>
+            <option value="Animé 3D">Animé 3D</option>
+            <option value="Télé-réalité">Télé-réalité</option>
+            <option value="Émissions TV étrangères">Émissions TV étrangères</option>
+            <option value="Spectacle">Spectacle</option>
+            <option value="Documentaire">Documentaire</option>
+            <option value="Mangas">Mangas</option>
+        </select><br><br>
+
+        <label for="format">Format :</label>
+        <select name="format" id="format" required>
+            <option value="Court métrage">Court métrage</option>
+            <option value="Long métrage">Long métrage</option>
+        </select><br><br>
+
+        <label for="qualite">Qualité :</label>
+        <select name="qualite" id="qualite" required>
+            <option value="HD">HD</option>
+            <option value="SD">SD</option>
+            <option value="Full HD">Full HD</option>
+            <option value="4K">4K</option>
+            <option value="WebRip">WebRip</option>
+            <option value="Cam">Cam</option>
+            <option value="BluRay">BluRay</option>
+        </select><br><br>
+
+        <label for="rarete">Rareté :</label>
+        <select name="rarete" id="rarete" required>
+            <option value="Bon marché">Bon marché</option>
+            <option value="Rare">Rare</option>
+        </select><br><br>
+
+        <label for="categorie">Catégorie :</label>
+        <input type="text" name="categorie" id="categorie" placeholder="Ex: Action, Romance, etc."><br><br>
+
+        <label for="acteur">Acteur :</label>
+        <input type="text" name="acteur" id="acteur" placeholder="Nom de l'acteur ou 'none'"><br><br>
+
+        <label for="production">Production :</label>
+        <input type="text" name="production" id="production" placeholder="Nom du studio ou 'none'"><br><br>
+
+        <label for="saison">Saison :</label>
+        <input type="text" name="saison" id="saison" placeholder="Entrez un numéro ou 'none'" required><br><br>
+
+        <label for="episodes">Épisodes :</label>
+        <input type="text" name="episodes" id="episodes" placeholder="Entrez un numéro ou 'none'" required><br><br>
+
+        <label for="annee">Année :</label>
+        <input type="text" name="annee" id="annee"><br><br>
+
+        <label for="prix">Prix (auto) :</label>
+        <input type="text" name="prix" id="prix" readonly><br><br>
+
+        <input type="submit" value="Ajouter">
+    </form>
+
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html>

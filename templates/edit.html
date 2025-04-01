@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier un contenu</title>
+</head>
+<body>
+    <h1>Modifier le contenu #{{ item[0] }}</h1>
+    <form method="POST">
+        <!-- item[0] => id -->
+        <!-- item[1] => titre, item[2] => type, item[3] => qualite, etc. -->
+
+        <label>Titre :</label>
+        <input type="text" name="titre" value="{{ item[1] }}" required><br><br>
+
+        <label>Type :</label>
+        <input type="text" name="type" value="{{ item[2] }}" required><br><br>
+
+        <label>Qualité :</label>
+        <input type="text" name="qualite" value="{{ item[3] }}" required><br><br>
+
+        <label>Format :</label>
+        <input type="text" name="format" value="{{ item[4] }}" required><br><br>
+
+        <label>Catégorie :</label>
+        <input type="text" name="categorie" value="{{ item[5] }}"><br><br>
+
+        <label>Rareté :</label>
+        <input type="text" name="rarete" value="{{ item[6] }}" required><br><br>
+
+        <label>Acteur :</label>
+        <input type="text" name="acteur" value="{{ item[8] }}"><br><br>
+
+        <label>Production :</label>
+        <input type="text" name="production" value="{{ item[9] }}"><br><br>
+
+        <label>Saison :</label>
+        <input type="text" name="saison" value="{{ item[10] }}"><br><br>
+
+        <label>Épisodes :</label>
+        <input type="text" name="episodes" value="{{ item[11] }}"><br><br>
+
+        <label>Année :</label>
+        <input type="text" name="annee" value="{{ item[12] }}"><br><br>
+
+        <input type="submit" value="Enregistrer">
+    </form>
+</body>
+</html>

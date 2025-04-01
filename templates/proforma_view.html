@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Aperçu du Proforma</title>
+</head>
+<body>
+  <h1>Aperçu du Proforma</h1>
+  <p><strong>ID :</strong> {{ proforma[0] }}</p>
+  <p><strong>Nom du Client :</strong> {{ proforma[1] }}</p>
+  <p><strong>Date de Génération :</strong> {{ proforma[10] }}</p>
+  <p><strong>Date d'Expiration :</strong> {{ proforma[11] }}</p>
+  <p><strong>Statut :</strong> {{ proforma[12] }}</p>
+  <!-- Affiche d'autres informations si nécessaire -->
+  <br>
+  <a href="/commandes/liste">Retour à la liste des commandes</a>
+</body>
+</html>

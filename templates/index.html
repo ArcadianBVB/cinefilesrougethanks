@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalogue de Stock Cinéfiles</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #aaa; padding: 8px; text-align: center; }
+        th { background: #f4f4f4; }
+        a { text-decoration: none; color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Catalogue de Stock Cinéfiles</h1>
+    <a href="/add">+ Ajouter un nouveau contenu</a>
+    <br><br>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Type</th>
+            <th>Qualité</th>
+            <th>Format</th>
+            <th>Catégorie</th>
+            <th>Rareté</th>
+            <th>Prix (USD)</th>
+            <th>Acteur</th>
+            <th>Production</th>
+            <th>Saison</th>
+            <th>Épisodes</th>
+            <th>Année</th>
+            <th>Date d’ajout</th>
+            <th>Date modif</th>
+            <th>Action</th>
+        </tr>
+        {% for row in rows %}
+        <tr>
+            <td>{{ row[0] }}</td>
+            <td>{{ row[1] }}</td>
+            <td>{{ row[2] }}</td>
+            <td>{{ row[3] }}</td>
+            <td>{{ row[4] }}</td>
+            <td>{{ row[5] }}</td>
+            <td>{{ row[6] }}</td>
+            <td>{{ row[7] }} $</td>
+            <td>{{ row[8] }}</td>
+            <td>{{ row[9] }}</td>
+            <td>{{ row[10] }}</td>
+            <td>{{ row[11] }}</td>
+            <td>{{ row[12] }}</td>
+            <td>{{ row[13] }}</td>
+            <td>{{ row[14] }}</td>
+            <td>
+                <a href="/modifier/{{ row[0] }}">Modifier</a> |
+                <a href="/delete/{{ row[0] }}" onclick="return confirm('Confirmer la suppression ?')">Supprimer</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
