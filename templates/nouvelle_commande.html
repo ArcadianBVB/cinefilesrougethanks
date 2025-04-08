@@ -2,41 +2,72 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Nouvelle Commande</title>
+  <title>Nouvelle Commande - Cinéfiles</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <!-- On inclut le script qui gère la recherche -->
+  <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </head>
 <body>
   <h1>Nouvelle Commande</h1>
-  <form method="POST" action="/commandes/nouvelle">
-    <label for="nom_client">Nom du client :</label>
-    <input type="text" name="nom_client" id="nom_client" required><br><br>
+  <form id="commandeForm" method="POST" action="/commandes/nouvelle">
+    <fieldset>
+      <legend>Informations Client</legend>
+      <label for="nom_client">Noms du client :</label>
+      <input type="text" id="nom_client" name="nom_client" required>
+      <br><br>
+      <label for="contact">Contact :</label>
+      <input type="text" id="contact" name="contact" required>
+      <br><br>
+      <label for="type_client">Type de client :</label>
+      <select id="type_client" name="type_client">
+        <option value="National">National</option>
+        <option value="International">International</option>
+      </select>
+      <br><br>
+      <label for="mode_livraison">Mode de livraison :</label>
+      <input type="text" id="mode_livraison" name="mode_livraison">
+      <br><br>
+      <label for="frais_livraison">Frais de livraison ($) :</label>
+      <input type="number" step="0.01" id="frais_livraison" name="frais_livraison" value="0">
+      <br><br>
+      <label for="observations">Observations :</label>
+      <textarea id="observations" name="observations"></textarea>
+    </fieldset>
 
-    <label for="contact">Contact :</label>
-    <input type="text" name="contact" id="contact" required><br><br>
+    <fieldset>
+      <legend>Produits</legend>
+      <label for="searchProduct">Rechercher un produit :</label>
+      <input type="text" id="searchProduct" oninput="searchProducts()">
+      <div id="searchResults" class="results-box"></div>
+      <br>
+      <table id="selectedProducts">
+        <thead>
+          <tr>
+            <th>Titre</th>
+            <th>Qualité</th>
+            <th>Prix ($)</th>
+            <th>Quantité</th>
+            <th>Total ($)</th>
+            <th>Suppr</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Les produits sélectionnés s'ajoutent ici dynamiquement -->
+        </tbody>
+      </table>
+    </fieldset>
 
-    <label for="type_client">Type de client :</label>
-    <select name="type_client" id="type_client" required>
-      <option value="National">National</option>
-      <option value="International">International</option>
-    </select><br><br>
+    <fieldset>
+      <legend>Montant</legend>
+      <label for="montant_total">Total Produits ($) :</label>
+      <input type="number" step="0.01" id="montant_total" name="montant_total" value="0" readonly>
+    </fieldset>
 
-    <label for="produits">Produits commandés :</label>
-    <textarea name="produits" id="produits" required></textarea><br><br>
+    <!-- Champ caché pour envoyer la liste des produits au serveur sous forme JSON -->
+    <input type="hidden" name="produits_json" id="produits_json">
 
-    <label for="montant_total">Montant Total :</label>
-    <input type="number" step="0.01" name="montant_total" id="montant_total" required><br><br>
-
-    <label for="mode_livraison">Mode de livraison :</label>
-    <input type="text" name="mode_livraison" id="mode_livraison"><br><br>
-
-    <label for="frais_livraison">Frais de livraison :</label>
-    <input type="number" step="0.01" name="frais_livraison" id="frais_livraison"><br><br>
-
-    <label for="observations">Observations :</label>
-    <textarea name="observations" id="observations"></textarea><br><br>
-
-    <input type="submit" value="Valider la commande">
+    <button type="submit">Valider et générer le proforma</button>
   </form>
-  <br>
-  <a href="/commandes/liste">Retour à la liste des commandes</a>
 </body>
 </html>
+

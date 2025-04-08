@@ -3,33 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <title>Liste des Commandes</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <h1>Liste des Commandes & Proformas</h1>
-  <a href="/commandes/nouvelle">Nouvelle Commande</a>
-  <br><br>
   <table border="1" cellpadding="5">
     <tr>
-      <th>ID</th>
-      <th>Nom du Client</th>
-      <th>Montant Total</th>
-      <th>Date Commande</th>
-      <th>Statut</th>
+      <th>ID interne</th>       <!-- row[0] -->
+      <th>ID Commande</th>      <!-- row[1] -->
+      <th>Noms du client</th>   <!-- row[2] -->
+      <th>Contact</th>          <!-- row[3] -->
+      <th>Type client</th>      <!-- row[4] -->
+      <th>Montant Total ($)</th><!-- row[6] -->
+      <th>Statut</th>           <!-- row[13] -->
+      <th>Date Commande</th>    <!-- row[10] -->
       <th>Actions</th>
     </tr>
-    {% for commande in commandes %}
+    {% for row in commandes %}
     <tr>
-      <td>{{ commande[0] }}</td>
-      <td>{{ commande[1] }}</td>
-      <td>{{ commande[5] }}</td>
-      <td>{{ commande[9] }}</td>
-      <td>{{ commande[11] }}</td>
+      <td>{{ row[0] }}</td>
+      <td>{{ row[1] }}</td>
+      <td>{{ row[2] }}</td>
+      <td>{{ row[3] }}</td>
+      <td>{{ row[4] }}</td>
+      <td>{{ row[6] }}</td>
+      <td>{{ row[13] }}</td>
+      <td>{{ row[10] }}</td>
       <td>
-        <a href="/commandes/view/{{ commande[0] }}">Voir</a> |
-        <a href="/commandes/changer_statut/{{ commande[0] }}/Payé">Marquer Payé</a>
+        <a href="{{ url_for('commandes.view_proforma', proforma_id=row[0]) }}">Voir</a> |
+        <a href="{{ url_for('commandes.changer_statut', proforma_id=row[0], nouveau_statut='Payé') }}">Marquer Payé</a> |
+        <a href="{{ url_for('commandes.delete_commande', proforma_id=row[0]) }}" onclick="return confirm('Supprimer ?');">Supprimer</a>
       </td>
     </tr>
     {% endfor %}
   </table>
+  <a href="{{ url_for('commandes.nouvelle_commande') }}">Ajouter une nouvelle commande</a>
 </body>
 </html>
+

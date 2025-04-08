@@ -3,16 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <title>Aperçu du Proforma</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <h1>Aperçu du Proforma</h1>
-  <p><strong>ID :</strong> {{ proforma[0] }}</p>
-  <p><strong>Nom du Client :</strong> {{ proforma[1] }}</p>
-  <p><strong>Date de Génération :</strong> {{ proforma[10] }}</p>
-  <p><strong>Date d'Expiration :</strong> {{ proforma[11] }}</p>
-  <p><strong>Statut :</strong> {{ proforma[12] }}</p>
-  <!-- Affiche d'autres informations si nécessaire -->
-  <br>
-  <a href="/commandes/liste">Retour à la liste des commandes</a>
+  <p><strong>ID interne :</strong> {{ proforma[0] }}</p>
+  <p><strong>ID Commande :</strong> {{ proforma[1] }}</p>
+  <p><strong>Noms du client :</strong> {{ proforma[2] }}</p>
+  <p><strong>Contact :</strong> {{ proforma[3] }}</p>
+  <p><strong>Type de client :</strong> {{ proforma[4] }}</p>
+  <p><strong>Produits :</strong> {{ proforma[5] }}</p>
+  <p><strong>Montant Total ($) :</strong> {{ proforma[6] }}</p>
+  <p><strong>Mode de livraison :</strong> {{ proforma[7] }}</p>
+  <p><strong>Frais de livraison :</strong> {{ proforma[8] }}</p>
+  <p><strong>Observations :</strong> {{ proforma[9] }}</p>
+  <p><strong>Date Commande :</strong> {{ proforma[10] }}</p>
+  <p><strong>Date Expiration :</strong> {{ proforma[12] }}</p>
+  <p><strong>Statut :</strong> {{ proforma[13] }}</p>
+  <a href="{{ url_for('commandes.liste_commandes') }}">Retour à la liste</a>
 </body>
 </html>
