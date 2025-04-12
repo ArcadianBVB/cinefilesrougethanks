@@ -3,38 +3,8 @@ import sqlite3
 from datetime import datetime
 from base_price import calculer_prix
 
-stock_bp = Blueprint('stock', __name__, url_prefix='/')
+stock_bp = Blueprint('stock', __name__)
 DB_NAME = "stock.db"
-
-def init_db():
-    """
-    Crée la table 'stock' si elle n'existe pas encore.
-    Pas de décorateur, car certaines versions de Flask ne supportent pas
-    before_app_first_request / before_app_request sur un Blueprint.
-    """
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS stock (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            titre TEXT,
-            type TEXT,
-            qualite TEXT,
-            format TEXT,
-            categorie TEXT,
-            rarete TEXT,
-            prix REAL,
-            acteur TEXT,
-            production TEXT,
-            saison TEXT,
-            episodes TEXT,
-            annee TEXT,
-            date_ajout TEXT,
-            date_modif TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
 
 @stock_bp.route("/")
 def index():
@@ -43,7 +13,18 @@ def index():
     c.execute("SELECT * FROM stock ORDER BY id DESC")
     rows = c.fetchall()
     conn.close()
-    return render_template("index.html", rows=rows)
+    return render_template("index.html", rows=rows, recherche="")
+
+@stock_bp.route("/rechercher", methods=["GET"])
+def rechercher():
+    mot_cle = request.args.get("q", "").lower()
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM stock WHERE LOWER(titre) LIKE ?", ('%' + mot_cle + '%',))
+    resultats = c.fetchall()
+    conn.close()
+    return render_template("index.html", rows=resultats, recherche=mot_cle)
 
 @stock_bp.route("/add", methods=["GET", "POST"])
 def add():
@@ -62,19 +43,17 @@ def add():
         annee = data.get("annee")
         date_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Calcul du prix
         prix = calculer_prix(type_, qualite, format_, rarete, saison, episodes)
 
         conn = sqlite3.connect(DB_NAME)
         c = conn.cursor()
-        c.execute('''
+        c.execute("""
             INSERT INTO stock (
                 titre, type, qualite, format, categorie, rarete, prix,
                 acteur, production, saison, episodes, annee,
                 date_ajout, date_modif
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (titre, type_, qualite, format_, categorie, rarete, prix,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (titre, type_, qualite, format_, categorie, rarete, prix,
               acteur, production, saison, episodes, annee, date_now, date_now))
         conn.commit()
         conn.close()
@@ -110,25 +89,13 @@ def modifier(item_id):
         date_modif = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         prix = calculer_prix(type_, qualite, format_, rarete, saison, episodes)
-        c.execute('''
-            UPDATE stock
-            SET titre=?,
-                type=?,
-                qualite=?,
-                format=?,
-                categorie=?,
-                rarete=?,
-                prix=?,
-                acteur=?,
-                production=?,
-                saison=?,
-                episodes=?,
-                annee=?,
-                date_modif=?
+        c.execute("""
+            UPDATE stock SET
+                titre=?, type=?, qualite=?, format=?, categorie=?, rarete=?, prix=?,
+                acteur=?, production=?, saison=?, episodes=?, annee=?, date_modif=?
             WHERE id=?
-        ''', (titre, type_, qualite, format_, categorie, rarete, prix,
-              acteur, production, saison, episodes, annee,
-              date_modif, item_id))
+        """, (titre, type_, qualite, format_, categorie, rarete, prix,
+              acteur, production, saison, episodes, annee, date_modif, item_id))
         conn.commit()
         conn.close()
         return redirect(url_for("stock.index"))
@@ -151,3 +118,4 @@ def prix_auto():
     episodes = data.get("episodes", "")
     prix = calculer_prix(type_, qualite, format_, rarete, saison, episodes)
     return jsonify({"prix": prix})
+

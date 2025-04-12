@@ -70,3 +70,9 @@ th, td {
 .search-result-item:hover {
   background: #f0f0f0;
 }
+input[type="text"] {
+  padding: 6px;
+  width: 250px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+}

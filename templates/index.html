@@ -9,12 +9,25 @@
         th, td { border: 1px solid #aaa; padding: 8px; text-align: center; }
         th { background: #f4f4f4; }
         a { text-decoration: none; color: blue; }
+        input[type="text"] {
+            padding: 6px;
+            width: 250px;
+            border-radius: 5px;
+            border: 1px solid #aaa;
+        }
     </style>
 </head>
 <body>
     <h1>Catalogue de Stock Cinéfiles</h1>
-    <a href="/add">+ Ajouter un nouveau contenu</a>
-    <br><br>
+
+    <a href="/stock/add">+ Ajouter un nouveau contenu</a>
+
+    <!-- Formulaire de recherche -->
+    <form action="/stock/rechercher" method="get" style="margin: 15px 0;">
+        <input type="text" name="q" placeholder="Rechercher un produit..." value="{{ recherche if recherche else '' }}">
+        <button type="submit">Rechercher</button>
+    </form>
+
     <table>
         <tr>
             <th>ID</th>
@@ -52,8 +65,8 @@
             <td>{{ row[13] }}</td>
             <td>{{ row[14] }}</td>
             <td>
-                <a href="/modifier/{{ row[0] }}">Modifier</a> |
-                <a href="/delete/{{ row[0] }}" onclick="return confirm('Confirmer la suppression ?')">Supprimer</a>
+                <a href="/stock/modifier/{{ row[0] }}">Modifier</a> |
+                <a href="/stock/delete/{{ row[0] }}" onclick="return confirm('Confirmer la suppression ?')">Supprimer</a>
             </td>
         </tr>
         {% endfor %}
