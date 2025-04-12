@@ -8,12 +8,29 @@ DB_NAME = "stock.db"
 
 @stock_bp.route("/")
 def index():
+    try:
+        page = int(request.args.get("page", 1))
+    except ValueError:
+        page = 1
+
+    per_page = 15  # Nombre d'éléments par page
+    offset = (page - 1) * per_page
+
     conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute("SELECT * FROM stock ORDER BY id DESC")
+
+    # Compter le nombre total d'entrées
+    c.execute("SELECT COUNT(*) FROM stock")
+    total = c.fetchone()[0]
+    total_pages = (total + per_page - 1) // per_page
+
+    # Récupérer uniquement les éléments de la page courante avec tri ASC
+    c.execute("SELECT * FROM stock ORDER BY id ASC LIMIT ? OFFSET ?", (per_page, offset))
     rows = c.fetchall()
     conn.close()
-    return render_template("index.html", rows=rows, recherche="")
+
+    return render_template("index.html", rows=rows, page=page, total_pages=total_pages, recherche="")
 
 @stock_bp.route("/rechercher", methods=["GET"])
 def rechercher():
@@ -24,7 +41,13 @@ def rechercher():
     c.execute("SELECT * FROM stock WHERE LOWER(titre) LIKE ?", ('%' + mot_cle + '%',))
     resultats = c.fetchall()
     conn.close()
-    return render_template("index.html", rows=resultats, recherche=mot_cle)
+    return render_template(
+    "index.html",
+    rows=resultats,
+    recherche=mot_cle,
+    page=1,
+    total_pages=1
+)
 
 @stock_bp.route("/add", methods=["GET", "POST"])
 def add():
