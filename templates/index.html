@@ -72,17 +72,31 @@
         {% endfor %}
 </table>
 
-<!-- PAGINATION -->
-<div class="pagination" style="margin-top: 20px; text-align: center;">
+<div style="margin-top: 20px; text-align: center;">
+
+    <!-- Lien "Première" et "Précédente" -->
     {% if page > 1 %}
+        <a href="{{ url_for('stock.index', page=1) }}">« Première</a>
         <a href="{{ url_for('stock.index', page=page-1) }}">&laquo; Précédent</a>
     {% endif %}
 
-    <span style="margin: 0 15px;">Page {{ page }} sur {{ total_pages }}</span>
+    <!-- Liens numériques -->
+    {% for p in pagination_links %}
+        {% if p == '...' %}
+            <span>...</span>
+        {% elif p == page %}
+            <span style="font-weight:bold;">{{ p }}</span>
+        {% else %}
+            <a href="{{ url_for('stock.index', page=p) }}">{{ p }}</a>
+        {% endif %}
+    {% endfor %}
 
+    <!-- Lien "Suivante" et "Dernière" -->
     {% if page < total_pages %}
         <a href="{{ url_for('stock.index', page=page+1) }}">Suivant &raquo;</a>
+        <a href="{{ url_for('stock.index', page=total_pages) }}">Dernière »</a>
     {% endif %}
+</div>
 </div>
 </body>
 </html>

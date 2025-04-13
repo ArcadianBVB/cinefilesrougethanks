@@ -2,6 +2,18 @@ from flask import Blueprint, render_template, request, redirect, url_for, jsonif
 import sqlite3
 from datetime import datetime
 from base_price import calculer_prix
+def get_pagination_links(page, total_pages, delta=2):
+    """
+    Retourne une liste de pages et/ou '...' pour un affichage propre.
+    Ex : [1, 2, 3, 4, 5, '...', 30] si total_pages=30, page=3, delta=2.
+    """
+    links = []
+    for p in range(1, total_pages + 1):
+        if p == 1 or p == total_pages or (p >= page - delta and p <= page + delta):
+            links.append(p)
+        elif links[-1] != "...":
+            links.append("...")
+    return links
 
 stock_bp = Blueprint('stock', __name__)
 DB_NAME = "stock.db"
@@ -13,24 +25,38 @@ def index():
     except ValueError:
         page = 1
 
-    per_page = 15  # Nombre d'éléments par page
+    per_page = 15
     offset = (page - 1) * per_page
 
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
-    # Compter le nombre total d'entrées
     c.execute("SELECT COUNT(*) FROM stock")
     total = c.fetchone()[0]
+
     total_pages = (total + per_page - 1) // per_page
 
-    # Récupérer uniquement les éléments de la page courante avec tri ASC
-    c.execute("SELECT * FROM stock ORDER BY id ASC LIMIT ? OFFSET ?", (per_page, offset))
+    # Chargement des produits avec pagination
+    c.execute("""
+        SELECT * FROM stock
+        ORDER BY id ASC
+        LIMIT ? OFFSET ?
+    """, (per_page, offset))
     rows = c.fetchall()
     conn.close()
 
-    return render_template("index.html", rows=rows, page=page, total_pages=total_pages, recherche="")
+    # Générer la pagination dynamique
+    pagination_links = get_pagination_links(page, total_pages, delta=2)
+
+    return render_template(
+        "index.html",
+        rows=rows,
+        page=page,
+        total_pages=total_pages,
+        pagination_links=pagination_links,
+        per_page=per_page
+    )
 
 @stock_bp.route("/rechercher", methods=["GET"])
 def rechercher():
