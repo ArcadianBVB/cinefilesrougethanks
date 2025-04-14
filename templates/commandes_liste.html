@@ -7,6 +7,23 @@
 </head>
 <body>
   <h1>Liste des Commandes & Proformas</h1>
+<h3>Filtrer les commandes</h3>
+<form method="get" action="{{ url_for('commandes.rechercher_commandes') }}" style="margin-bottom: 20px;">
+    <input type="text" name="nom_client" placeholder="Nom du client" value="{{ request.args.get('nom_client', '') }}">
+    <input type="text" name="id_commande" placeholder="ID commande" value="{{ request.args.get('id_commande', '') }}">
+
+    <select name="statut">
+        <option value="">-- Statut --</option>
+        <option value="En attente" {% if request.args.get('statut') == 'En attente' %}selected{% endif %}>En attente</option>
+        <option value="Livré" {% if request.args.get('statut') == 'Livré' %}selected{% endif %}>Livré</option>
+        <option value="Expiré" {% if request.args.get('statut') == 'Expiré' %}selected{% endif %}>Expiré</option>
+    </select>
+
+    <input type="date" name="date_debut" value="{{ request.args.get('date_debut', '') }}">
+    <input type="date" name="date_fin" value="{{ request.args.get('date_fin', '') }}">
+
+    <button type="submit">Rechercher</button>
+</form>
   <table border="1" cellpadding="5">
     <tr>
       <th>ID interne</th>       <!-- row[0] -->

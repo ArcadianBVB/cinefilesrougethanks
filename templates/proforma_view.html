@@ -1,25 +1,54 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Aperçu du Proforma</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>Aperçu du Proforma</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 25px;
+        }
+        h2 {
+            color: #2c3e50;
+        }
+        p {
+            margin: 8px 0;
+        }
+        ul {
+            list-style: square;
+            margin-top: 0;
+        }
+        .btn {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-  <h1>Aperçu du Proforma</h1>
-  <p><strong>ID interne :</strong> {{ proforma[0] }}</p>
-  <p><strong>ID Commande :</strong> {{ proforma[1] }}</p>
-  <p><strong>Noms du client :</strong> {{ proforma[2] }}</p>
-  <p><strong>Contact :</strong> {{ proforma[3] }}</p>
-  <p><strong>Type de client :</strong> {{ proforma[4] }}</p>
-  <p><strong>Produits :</strong> {{ proforma[5] }}</p>
-  <p><strong>Montant Total ($) :</strong> {{ proforma[6] }}</p>
-  <p><strong>Mode de livraison :</strong> {{ proforma[7] }}</p>
-  <p><strong>Frais de livraison :</strong> {{ proforma[8] }}</p>
-  <p><strong>Observations :</strong> {{ proforma[9] }}</p>
-  <p><strong>Date Commande :</strong> {{ proforma[10] }}</p>
-  <p><strong>Date Expiration :</strong> {{ proforma[12] }}</p>
-  <p><strong>Statut :</strong> {{ proforma[13] }}</p>
-  <a href="{{ url_for('commandes.liste_commandes') }}">Retour à la liste</a>
+    <h2>Aperçu du Proforma</h2>
+
+    <p><strong>ID interne :</strong> {{ proforma["id"] }}</p>
+    <p><strong>ID Commande :</strong> {{ proforma["id_commande"] }}</p>
+    <p><strong>Noms du client :</strong> {{ proforma["nom_client"] }}</p>
+    <p><strong>Contact :</strong> {{ proforma["contact"] }}</p>
+    <p><strong>Type de client :</strong> {{ proforma["type_client"] }}</p>
+
+    <h4>Produits :</h4>
+    <ul>
+      {% for produit in produits %}
+        <li>{{ produit["titre"] }} — {{ produit["qualite"] }} — {{ produit["quantite"] }} × {{ produit["prix"] }} $ = {{ produit["total"] }} $</li>
+      {% endfor %}
+    </ul>
+
+    <p><strong>Montant Total ($) :</strong> {{ proforma["montant_total"] }}</p>
+    <p><strong>Mode de livraison :</strong> {{ proforma["mode_livraison"] }}</p>
+    <p><strong>Frais de livraison :</strong> {{ proforma["frais_livraison"] }}</p>
+    <p><strong>Observations :</strong> {{ proforma["observations"] }}</p>
+    <p><strong>Date Commande :</strong> {{ proforma["date_commande"] }}</p>
+    <p><strong>Date Expiration :</strong> {{ proforma["date_expiration"] }}</p>
+    <p><strong>Statut :</strong> {{ proforma["statut"] }}</p>
+
+    <div class="btn">
+        <a href="{{ url_for('commandes.liste_commandes') }}">Retour à la liste</a>
+    </div>
 </body>
 </html>

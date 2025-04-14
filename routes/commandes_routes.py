@@ -3,7 +3,52 @@ import sqlite3
 from datetime import datetime, timedelta
 import random
 import string
+import json  # Pour charger les produits
+from base_price import calculer_prix
+
+# Déclaration du blueprint
+commandes_bp = Blueprint('commandes', __name__)
+
+DB_NAME = "stock.db"
+
+@commandes_bp.route("/view/<int:proforma_id>")
+def view_proforma(proforma_id):
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM proformas WHERE id=?", (proforma_id,))
+    proforma = c.fetchone()
+    conn.close()
+
+    if not proforma:
+        return "Commande non trouvée", 404
+
+    try:
+        produits = json.loads(proforma["produits"])
+    except:
+        produits = []
+
+    return render_template("proforma_view.html", proforma=proforma, produits=produits)
 from base_price import calculer_prix  # On utilise le module de tarification officiel
+
+@commandes_bp.route("/view/<int:proforma_id>")
+def view_proforma(proforma_id):
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM proformas WHERE id=?", (proforma_id,))
+    proforma = c.fetchone()
+    conn.close()
+
+    if not proforma:
+        return "Commande non trouvée", 404
+
+    try:
+        produits = json.loads(proforma["produits"])
+    except:
+        produits = []
+
+    return render_template("proforma_view.html", proforma=proforma, produits=produits)
 
 commandes_bp = Blueprint('commandes', __name__)
 DB_NAME = "stock.db"
@@ -115,14 +160,21 @@ def search_products():
 @commandes_bp.route("/view/<int:proforma_id>")
 def view_proforma(proforma_id):
     conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
     c.execute("SELECT * FROM proformas WHERE id=?", (proforma_id,))
     proforma = c.fetchone()
     conn.close()
-    if proforma:
-        return render_template("proforma_view.html", proforma=proforma)
-    else:
+
+    if not proforma:
         return "Commande non trouvée", 404
+
+    try:
+        produits = json.loads(proforma["produits"])
+    except:
+        produits = []
+
+    return render_template("proforma_view.html", proforma=proforma, produits=produits)
 
 @commandes_bp.route("/delete/<int:proforma_id>")
 def delete_commande(proforma_id):
@@ -141,3 +193,44 @@ def changer_statut(proforma_id, nouveau_statut):
     conn.commit()
     conn.close()
     return redirect(url_for("commandes.liste_commandes"))
+
+@commandes_bp.route("/rechercher")
+def rechercher_commandes():
+    nom_client = request.args.get("nom_client", "").strip()
+    id_commande = request.args.get("id_commande", "").strip()
+    statut = request.args.get("statut", "").strip()
+    date_debut = request.args.get("date_debut", "")
+    date_fin = request.args.get("date_fin", "")
+
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    query = "SELECT * FROM proformas WHERE 1=1"
+    params = []
+
+    if nom_client:
+        query += " AND nom_client LIKE ?"
+        params.append(f"%{nom_client}%")
+
+    if id_commande:
+        query += " AND id_commande LIKE ?"
+        params.append(f"%{id_commande}%")
+
+    if statut:
+        query += " AND statut = ?"
+        params.append(statut)
+
+    if date_debut:
+        query += " AND date_expiration >= ?"
+        params.append(date_debut)
+
+    if date_fin:
+        query += " AND date_expiration <= ?"
+        params.append(date_fin)
+
+    c.execute(query, params)
+    commandes = c.fetchall()
+    conn.close()
+
+    return render_template("commandes_liste.html", commandes=commandes)
