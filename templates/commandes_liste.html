@@ -15,7 +15,7 @@
     <select name="statut">
         <option value="">-- Statut --</option>
         <option value="En attente" {% if request.args.get('statut') == 'En attente' %}selected{% endif %}>En attente</option>
-        <option value="Livré" {% if request.args.get('statut') == 'Livré' %}selected{% endif %}>Livré</option>
+        <option value="Payé" {% if request.args.get('statut') == 'Payé' %}selected{% endif %}>Payé</option>
         <option value="Expiré" {% if request.args.get('statut') == 'Expiré' %}selected{% endif %}>Expiré</option>
     </select>
 

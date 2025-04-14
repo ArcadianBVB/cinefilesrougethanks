@@ -29,26 +29,6 @@ def view_proforma(proforma_id):
         produits = []
 
     return render_template("proforma_view.html", proforma=proforma, produits=produits)
-from base_price import calculer_prix  # On utilise le module de tarification officiel
-
-@commandes_bp.route("/view/<int:proforma_id>")
-def view_proforma(proforma_id):
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute("SELECT * FROM proformas WHERE id=?", (proforma_id,))
-    proforma = c.fetchone()
-    conn.close()
-
-    if not proforma:
-        return "Commande non trouvée", 404
-
-    try:
-        produits = json.loads(proforma["produits"])
-    except:
-        produits = []
-
-    return render_template("proforma_view.html", proforma=proforma, produits=produits)
 
 commandes_bp = Blueprint('commandes', __name__)
 DB_NAME = "stock.db"
