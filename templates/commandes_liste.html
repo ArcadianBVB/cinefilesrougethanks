@@ -1,60 +1,69 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Liste des Commandes</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>Liste des Commandes & Proformas</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h1>Liste des Commandes & Proformas</h1>
-<h3>Filtrer les commandes</h3>
-<form method="get" action="{{ url_for('commandes.rechercher_commandes') }}" style="margin-bottom: 20px;">
-    <input type="text" name="nom_client" placeholder="Nom du client" value="{{ request.args.get('nom_client', '') }}">
-    <input type="text" name="id_commande" placeholder="ID commande" value="{{ request.args.get('id_commande', '') }}">
+    <h2>Liste des Commandes & Proformas</h2>
 
-    <select name="statut">
-        <option value="">-- Statut --</option>
-        <option value="En attente" {% if request.args.get('statut') == 'En attente' %}selected{% endif %}>En attente</option>
-        <option value="Payé" {% if request.args.get('statut') == 'Payé' %}selected{% endif %}>Payé</option>
-        <option value="Expiré" {% if request.args.get('statut') == 'Expiré' %}selected{% endif %}>Expiré</option>
-    </select>
+    <form method="get" action="{{ url_for('commandes.rechercher_commandes') }}">
+        <fieldset>
+            <legend>Filtrer les commandes</legend>
+            <input type="text" name="nom_client" placeholder="Nom du client" value="{{ request.args.get('nom_client', '') }}">
+            <input type="text" name="id_commande" placeholder="ID commande" value="{{ request.args.get('id_commande', '') }}">
+            <select name="statut">
+                <option value="">-- Statut --</option>
+                <option value="En attente">En attente</option>
+                <option value="Payé">Payé</option>
+                <option value="Expiré">Expiré</option>
+            </select>
+            <input type="date" name="date_debut" value="{{ request.args.get('date_debut', '') }}">
+            <input type="date" name="date_fin" value="{{ request.args.get('date_fin', '') }}">
+            <button type="submit">Rechercher</button>
+        </fieldset>
+    </form>
 
-    <input type="date" name="date_debut" value="{{ request.args.get('date_debut', '') }}">
-    <input type="date" name="date_fin" value="{{ request.args.get('date_fin', '') }}">
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID interne</th>
+                <th>ID Commande</th>
+                <th>Noms du client</th>
+                <th>Contact</th>
+                <th>Type client</th>
+                <th>Produits</th>
+                <th>Montant Total ($)</th>
+                <th>Mode livraison</th>
+                <th>Statut</th>
+                <th>Date Commande</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in commandes %}
+                <tr>
+                    <td>{{ row['id'] }}</td>
+                    <td>{{ row['id_commande'] }}</td>
+                    <td>{{ row['nom_client'] }}</td>
+                    <td>{{ row['contact'] }}</td>
+                    <td>{{ row['type_client'] }}</td>
+                    <td>{{ row['produits'] }}</td>
+                    <td>{{ row['montant_total'] }}</td>
+                    <td>{{ row['mode_livraison'] }}</td>
+                    <td>{{ row['statut'] }}</td>
+                    <td>{{ row['date_commande'] }}</td>
+                    <td>
+                        <a href="{{ url_for('commandes.view_proforma', proforma_id=row['id']) }}">Voir</a> |
+                        <a href="{{ url_for('commandes.changer_statut', proforma_id=row['id'], nouveau_statut='Payé') }}">Payer</a> |
+                        <a href="{{ url_for('commandes.delete_commande', proforma_id=row['id']) }}">Supprimer</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-    <button type="submit">Rechercher</button>
-</form>
-  <table border="1" cellpadding="5">
-    <tr>
-      <th>ID interne</th>       <!-- row[0] -->
-      <th>ID Commande</th>      <!-- row[1] -->
-      <th>Noms du client</th>   <!-- row[2] -->
-      <th>Contact</th>          <!-- row[3] -->
-      <th>Type client</th>      <!-- row[4] -->
-      <th>Montant Total ($)</th><!-- row[6] -->
-      <th>Statut</th>           <!-- row[13] -->
-      <th>Date Commande</th>    <!-- row[10] -->
-      <th>Actions</th>
-    </tr>
-    {% for row in commandes %}
-    <tr>
-      <td>{{ row[0] }}</td>
-      <td>{{ row[1] }}</td>
-      <td>{{ row[2] }}</td>
-      <td>{{ row[3] }}</td>
-      <td>{{ row[4] }}</td>
-      <td>{{ row[6] }}</td>
-      <td>{{ row[13] }}</td>
-      <td>{{ row[10] }}</td>
-      <td>
-        <a href="{{ url_for('commandes.view_proforma', proforma_id=row[0]) }}">Voir</a> |
-        <a href="{{ url_for('commandes.changer_statut', proforma_id=row[0], nouveau_statut='Payé') }}">Marquer Payé</a> |
-        <a href="{{ url_for('commandes.delete_commande', proforma_id=row[0]) }}" onclick="return confirm('Supprimer ?');">Supprimer</a>
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
-  <a href="{{ url_for('commandes.nouvelle_commande') }}">Ajouter une nouvelle commande</a>
+    <p><a href="{{ url_for('commandes.nouvelle_commande') }}">Ajouter une nouvelle commande</a></p>
 </body>
 </html>
-

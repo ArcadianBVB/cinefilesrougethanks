@@ -1,0 +1,28 @@
+from flask import Flask
+from routes.stock_routes import stock_bp
+from routes.commandes_routes import commandes_bp
+from flask import g
+import sqlite3
+from datetime import datetime
+
+app = Flask(__name__)
+
+# Enregistrement des blueprints avec leurs préfixes respectifs
+app.register_blueprint(stock_bp, url_prefix="/stock")
+app.register_blueprint(commandes_bp, url_prefix="/commandes")
+
+@app.before_request
+def verifier_expirations():
+    conn = sqlite3.connect("stock.db")
+    c = conn.cursor()
+    c.execute("""
+        UPDATE proformas
+        SET statut = 'Expiré'
+        WHERE statut = 'En attente'
+        AND datetime(date_expiration) < datetime('now')
+    """)
+    conn.commit()
+    conn.close()
+
+if __name__ == "__main__":
+    app.run(debug=True)

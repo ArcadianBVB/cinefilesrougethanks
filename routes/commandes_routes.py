@@ -102,30 +102,36 @@ def nouvelle_commande():
 @commandes_bp.route("/liste")
 def liste_commandes():
     conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
     c = conn.cursor()
+
+    # Mise à jour des statuts expirés
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    c.execute("UPDATE proformas SET statut = 'Expiré' WHERE statut = 'En attente' AND date_expiration < ?", (now,))
+    conn.commit()
+
+    # Récupération des commandes
     c.execute('''
-        SELECT
-            id,
-            id_commande,
-            nom_client,
-            contact,
-            type_client,
-            produits,
-            montant_total,
-            mode_livraison,
-            frais_livraison,
-            observations,
-            date_commande,
-            date_generation,
-            date_expiration,
-            statut,
-            chemin_fichier
+        SELECT id, id_commande, nom_client, contact, type_client, produits,
+               montant_total, mode_livraison, frais_livraison, observations,
+               date_commande, date_generation, date_expiration, statut, chemin_fichier
         FROM proformas
         ORDER BY id DESC
     ''')
     commandes = c.fetchall()
     conn.close()
-    return render_template("commandes_liste.html", commandes=commandes)
+
+    # Formatage JSON lisible pour l'affichage
+    commandes_formatees = []
+    for commande in commandes:
+        commande_dict = dict(commande)
+        try:
+            commande_dict["produits_liste"] = json.loads(commande["produits"])
+        except:
+            commande_dict["produits_liste"] = []
+        commandes_formatees.append(commande_dict)
+
+    return render_template("commandes_liste.html", commandes=commandes_formatees)
 
 @commandes_bp.route("/search_products")
 def search_products():
