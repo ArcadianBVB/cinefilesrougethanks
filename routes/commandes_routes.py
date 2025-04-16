@@ -126,9 +126,12 @@ def liste_commandes():
     for commande in commandes:
         commande_dict = dict(commande)
         try:
-            commande_dict["produits_liste"] = json.loads(commande["produits"])
-        except:
+            produits = json.loads(commande["produits"])
+            commande_dict["produits_liste"] = produits
+            commande_dict["produits"] = ", ".join([f"{p['titre']} (x{p['quantite']})" for p in produits])
+        except Exception as e:
             commande_dict["produits_liste"] = []
+            commande_dict["produits"] = "Erreur d'affichage"
         commandes_formatees.append(commande_dict)
 
     return render_template("commandes_liste.html", commandes=commandes_formatees)
@@ -166,8 +169,14 @@ def view_proforma(proforma_id):
 def delete_commande(proforma_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
+
+    # Exécution de la suppression
     c.execute("DELETE FROM proformas WHERE id=?", (proforma_id,))
     conn.commit()
+
+    # Affichage dans la console
+    print(f"Commande ID {proforma_id} supprimée avec succès")
+
     conn.close()
     return redirect(url_for("commandes.liste_commandes"))
 
@@ -180,17 +189,51 @@ def changer_statut(proforma_id, nouveau_statut):
     conn.close()
     return redirect(url_for("commandes.liste_commandes"))
 
-@commandes_bp.route("/rechercher")
-def rechercher_commandes():
-    nom_client = request.args.get("nom_client", "").strip()
-    id_commande = request.args.get("id_commande", "").strip()
-    statut = request.args.get("statut", "").strip()
-    date_debut = request.args.get("date_debut", "")
-    date_fin = request.args.get("date_fin", "")
-
+@commandes_bp.route("/modifier/<int:proforma_id>", methods=["GET", "POST"])
+def modifier_commande(proforma_id):
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
+
+    if request.method == "POST":
+        nom_client = request.form.get("nom_client")
+        contact = request.form.get("contact")
+        type_client = request.form.get("type_client")
+        mode_livraison = request.form.get("mode_livraison")
+        observations = request.form.get("observations")
+        statut = request.form.get("statut")
+
+        c.execute("""
+            UPDATE proformas SET 
+                nom_client = ?, 
+                contact = ?, 
+                type_client = ?, 
+                mode_livraison = ?, 
+                observations = ?, 
+                statut = ?
+            WHERE id = ?
+        """, (nom_client, contact, type_client, mode_livraison, observations, statut, proforma_id))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('commandes.liste_commandes'))
+
+    # GET : charger les données
+    c.execute("SELECT * FROM proformas WHERE id=?", (proforma_id,))
+    proforma = c.fetchone()
+    conn.close()
+
+    if not proforma:
+        return "Commande non trouvée", 404
+
+    return render_template("modifier_commande.html", proforma=proforma)
+
+@commandes_bp.route("/rechercher", methods=["GET"])
+def rechercher_commandes():
+    nom_client = request.args.get("nom_client", "")
+    id_commande = request.args.get("id_commande", "")
+    statut = request.args.get("statut", "")
+    date_debut = request.args.get("date_debut", "")
+    date_fin = request.args.get("date_fin", "")
 
     query = "SELECT * FROM proformas WHERE 1=1"
     params = []
@@ -198,25 +241,36 @@ def rechercher_commandes():
     if nom_client:
         query += " AND nom_client LIKE ?"
         params.append(f"%{nom_client}%")
-
     if id_commande:
         query += " AND id_commande LIKE ?"
         params.append(f"%{id_commande}%")
-
     if statut:
         query += " AND statut = ?"
         params.append(statut)
-
     if date_debut:
-        query += " AND date_expiration >= ?"
+        query += " AND date_commande >= ?"
         params.append(date_debut)
-
     if date_fin:
-        query += " AND date_expiration <= ?"
+        query += " AND date_commande <= ?"
         params.append(date_fin)
 
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
     c.execute(query, params)
     commandes = c.fetchall()
     conn.close()
 
-    return render_template("commandes_liste.html", commandes=commandes)
+    commandes_formatees = []
+    for commande in commandes:
+        commande_dict = dict(commande)
+        try:
+            produits = json.loads(commande["produits"])
+            commande_dict["produits_liste"] = produits
+            commande_dict["produits"] = ", ".join([f"{p['titre']} (x{p['quantite']})" for p in produits])
+        except:
+            commande_dict["produits_liste"] = []
+            commande_dict["produits"] = "Erreur d'affichage"
+        commandes_formatees.append(commande_dict)
+
+    return render_template("commandes_liste.html", commandes=commandes_formatees)

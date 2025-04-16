@@ -55,9 +55,9 @@
                     <td>{{ row['statut'] }}</td>
                     <td>{{ row['date_commande'] }}</td>
                     <td>
-                        <a href="{{ url_for('commandes.view_proforma', proforma_id=row['id']) }}">Voir</a> |
-                        <a href="{{ url_for('commandes.changer_statut', proforma_id=row['id'], nouveau_statut='Payé') }}">Payer</a> |
-                        <a href="{{ url_for('commandes.delete_commande', proforma_id=row['id']) }}">Supprimer</a>
+<a href="{{ url_for('commandes.changer_statut', proforma_id=row['id'], nouveau_statut='Payé') }}">Marquer payé</a> |
+<a href="{{ url_for('commandes.delete_commande', proforma_id=row['id']) }}">Supprimer</a> |
+<a href="{{ url_for('commandes.modifier_commande', proforma_id=row['id']) }}">Modifier</a>
                     </td>
                 </tr>
             {% endfor %}

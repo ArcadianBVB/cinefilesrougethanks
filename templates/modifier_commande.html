@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier Commande</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Modifier la commande : {{ proforma['id_commande'] }}</h2>
+    <form method="POST">
+        <label>Nom du client :</label><br>
+        <input type="text" name="nom_client" value="{{ proforma['nom_client'] }}"><br><br>
+
+        <label>Contact :</label><br>
+        <input type="text" name="contact" value="{{ proforma['contact'] }}"><br><br>
+
+        <label>Type client :</label><br>
+        <select name="type_client">
+            <option value="National" {% if proforma['type_client'] == 'National' %}selected{% endif %}>National</option>
+            <option value="International" {% if proforma['type_client'] == 'International' %}selected{% endif %}>International</option>
+        </select><br><br>
+
+        <label>Mode de livraison :</label><br>
+        <input type="text" name="mode_livraison" value="{{ proforma['mode_livraison'] }}"><br><br>
+
+        <label>Observations :</label><br>
+        <textarea name="observations">{{ proforma['observations'] }}</textarea><br><br>
+
+        <label>Statut :</label><br>
+        <select name="statut">
+            <option value="En attente" {% if proforma['statut'] == 'En attente' %}selected{% endif %}>En attente</option>
+            <option value="Payé" {% if proforma['statut'] == 'Payé' %}selected{% endif %}>Payé</option>
+            <option value="Expiré" {% if proforma['statut'] == 'Expiré' %}selected{% endif %}>Expiré</option>
+        </select><br><br>
+
+        <button type="submit">Enregistrer les modifications</button>
+        <a href="{{ url_for('commandes.liste_commandes') }}">Retour</a>
+    </form>
+</body>
+</html>
