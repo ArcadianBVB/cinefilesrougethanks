@@ -76,3 +76,12 @@ input[type="text"] {
   border-radius: 5px;
   border: 1px solid #aaa;
 }
+.btn-ajouter {
+    background-color: green;
+    color: white;
+    padding: 6px 12px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+

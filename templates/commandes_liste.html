@@ -8,6 +8,10 @@
 <body>
     <h2>Liste des Commandes & Proformas</h2>
 
+    <div style="text-align: right; margin-bottom: 10px;">
+        <a href="{{ url_for('commandes.nouvelle_commande') }}" class="btn-ajouter">+ Ajouter une commande</a>
+    </div>
+
     <form method="get" action="{{ url_for('commandes.rechercher_commandes') }}">
         <fieldset>
             <legend>Filtrer les commandes</legend>
@@ -34,36 +38,66 @@
                 <th>Contact</th>
                 <th>Type client</th>
                 <th>Produits</th>
-                <th>Montant Total ($)</th>
-                <th>Mode livraison</th>
+                <th>Total</th>
+                <th>Livraison</th>
                 <th>Statut</th>
-                <th>Date Commande</th>
+                <th>Date</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            {% for row in commandes %}
-                <tr>
-                    <td>{{ row['id'] }}</td>
-                    <td>{{ row['id_commande'] }}</td>
-                    <td>{{ row['nom_client'] }}</td>
-                    <td>{{ row['contact'] }}</td>
-                    <td>{{ row['type_client'] }}</td>
-                    <td>{{ row['produits'] }}</td>
-                    <td>{{ row['montant_total'] }}</td>
-                    <td>{{ row['mode_livraison'] }}</td>
-                    <td>{{ row['statut'] }}</td>
-                    <td>{{ row['date_commande'] }}</td>
-                    <td>
-<a href="{{ url_for('commandes.changer_statut', proforma_id=row['id'], nouveau_statut='Payé') }}">Marquer payé</a> |
-<a href="{{ url_for('commandes.delete_commande', proforma_id=row['id']) }}">Supprimer</a> |
-<a href="{{ url_for('commandes.modifier_commande', proforma_id=row['id']) }}">Modifier</a>
-                    </td>
-                </tr>
-            {% endfor %}
+        {% for commande in commandes %}
+            <tr>
+                <td>{{ commande.id }}</td>
+                <td>{{ commande.id_commande }}</td>
+                <td>{{ commande.nom_client }}</td>
+                <td>{{ commande.contact }}</td>
+                <td>{{ commande.type_client }}</td>
+                <td style="text-align: left;">
+                    <ul style="padding-left: 15px;">
+                    {% for p in commande.produits %}
+                        <li>{{ p['titre'] }} ({{ p['qualité'] }}) × {{ p['quantité'] }} = {{ p['total'] }} $</li>
+                    {% endfor %}
+                    </ul>
+                </td>
+                <td>{{ commande.montant_total }} $</td>
+                <td>{{ commande.mode_livraison }}</td>
+                <td>{{ commande.statut }}</td>
+                <td>{{ commande.date_generation }}</td>
+                <td>
+                    <a href="{{ url_for('commandes.view_proforma', proforma_id=commande.id) }}">Voir</a> |
+                    <a href="{{ url_for('commandes.supprimer_commande', proforma_id=commande.id) }}"
+                       onclick="return confirm('Confirmer la suppression ?')">Supprimer</a> |
+                    <a href="{{ url_for('commandes.modifier_commande', proforma_id=commande.id) }}">Modifier</a> |
+                    <a href="{{ url_for('commandes.changer_statut', proforma_id=commande.id, nouveau_statut='Payé') }}">Marquer payé</a>
+                </td>
+            </tr>
+        {% endfor %}
         </tbody>
     </table>
 
-    <p><a href="{{ url_for('commandes.nouvelle_commande') }}">Ajouter une nouvelle commande</a></p>
+    {% if pagination_links %}
+    <div class="pagination" style="text-align: center; margin-top: 20px;">
+        {% if page > 1 %}
+            <a class="page-link" href="{{ url_for('commandes.liste_commandes', page=1) }}">Première</a>
+            <a class="page-link" href="{{ url_for('commandes.liste_commandes', page=page - 1) }}">Précédente</a>
+        {% endif %}
+
+        {% for p in pagination_links %}
+            {% if p == page %}
+                <strong class="page-link">{{ p }}</strong>
+            {% elif p == '...' %}
+                <span class="page-link">...</span>
+            {% else %}
+                <a class="page-link" href="{{ url_for('commandes.liste_commandes', page=p) }}">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page < total_pages %}
+            <a class="page-link" href="{{ url_for('commandes.liste_commandes', page=page + 1) }}">Suivante</a>
+            <a class="page-link" href="{{ url_for('commandes.liste_commandes', page=total_pages) }}">Dernière</a>
+        {% endif %}
+    </div>
+    {% endif %}
 </body>
 </html>

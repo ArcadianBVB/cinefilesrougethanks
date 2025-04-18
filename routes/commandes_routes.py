@@ -3,13 +3,21 @@ import sqlite3
 from datetime import datetime, timedelta
 import random
 import string
-import json  # Pour charger les produits
+import json
 from base_price import calculer_prix
 
-# Déclaration du blueprint
 commandes_bp = Blueprint('commandes', __name__)
-
 DB_NAME = "stock.db"
+
+# Fonction de pagination copiée depuis stock_routes
+def get_pagination_links(page, total_pages, delta=2):
+    links = []
+    for p in range(1, total_pages + 1):
+        if p == 1 or p == total_pages or (p >= page - delta and p <= page + delta):
+            links.append(p)
+        elif links[-1] != "...":
+            links.append("...")
+    return links
 
 @commandes_bp.route("/view/<int:proforma_id>")
 def view_proforma(proforma_id):
@@ -101,40 +109,54 @@ def nouvelle_commande():
 
 @commandes_bp.route("/liste")
 def liste_commandes():
+    try:
+        page = int(request.args.get("page", 1))
+    except ValueError:
+        page = 1
+
+    per_page = 11
+    offset = (page - 1) * per_page
+
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
-    # Mise à jour des statuts expirés
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    c.execute("UPDATE proformas SET statut = 'Expiré' WHERE statut = 'En attente' AND date_expiration < ?", (now,))
-    conn.commit()
+    c.execute("SELECT COUNT(*) FROM proformas")
+    total = c.fetchone()[0]
+    total_pages = (total + per_page - 1) // per_page
 
-    # Récupération des commandes
-    c.execute('''
-        SELECT id, id_commande, nom_client, contact, type_client, produits,
-               montant_total, mode_livraison, frais_livraison, observations,
-               date_commande, date_generation, date_expiration, statut, chemin_fichier
-        FROM proformas
-        ORDER BY id DESC
-    ''')
+    c.execute("SELECT * FROM proformas ORDER BY id ASC LIMIT ? OFFSET ?", (per_page, offset))
     commandes = c.fetchall()
     conn.close()
 
-    # Formatage JSON lisible pour l'affichage
     commandes_formatees = []
-    for commande in commandes:
-        commande_dict = dict(commande)
+    for cmd in commandes:
         try:
-            produits = json.loads(commande["produits"])
-            commande_dict["produits_liste"] = produits
-            commande_dict["produits"] = ", ".join([f"{p['titre']} (x{p['quantite']})" for p in produits])
-        except Exception as e:
-            commande_dict["produits_liste"] = []
-            commande_dict["produits"] = "Erreur d'affichage"
-        commandes_formatees.append(commande_dict)
+            produits = json.loads(cmd["produits"])
+        except:
+            produits = []
+        commandes_formatees.append({
+            "id": cmd["id"],  # utilisé pour action/modif/suppression
+            "id_commande": cmd["id_commande"],  # utilisé pour affichage
+            "nom_client": cmd["nom_client"],
+            "contact": cmd["contact"],
+            "type_client": cmd["type_client"],
+            "produits": produits,
+            "montant_total": cmd["montant_total"],
+            "statut": cmd["statut"],
+            "mode_livraison": cmd["mode_livraison"],
+            "frais_livraison": cmd["frais_livraison"],
+            "date_generation": cmd["date_generation"]
+        })
 
-    return render_template("commandes_liste.html", commandes=commandes_formatees)
+    pagination_links = get_pagination_links(page, total_pages, delta=2)
+
+    return render_template("commandes_liste.html",
+                           commandes=commandes_formatees,
+                           page=page,
+                           total_pages=total_pages,
+                           pagination_links=pagination_links,
+                           per_page=per_page)
 
 @commandes_bp.route("/search_products")
 def search_products():
@@ -166,17 +188,11 @@ def view_proforma(proforma_id):
     return render_template("proforma_view.html", proforma=proforma, produits=produits)
 
 @commandes_bp.route("/delete/<int:proforma_id>")
-def delete_commande(proforma_id):
+def supprimer_commande(proforma_id):
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-
-    # Exécution de la suppression
     c.execute("DELETE FROM proformas WHERE id=?", (proforma_id,))
     conn.commit()
-
-    # Affichage dans la console
-    print(f"Commande ID {proforma_id} supprimée avec succès")
-
     conn.close()
     return redirect(url_for("commandes.liste_commandes"))
 
@@ -229,48 +245,55 @@ def modifier_commande(proforma_id):
 
 @commandes_bp.route("/rechercher", methods=["GET"])
 def rechercher_commandes():
-    nom_client = request.args.get("nom_client", "")
-    id_commande = request.args.get("id_commande", "")
+    nom_client = request.args.get("nom_client", "").lower()
+    id_commande = request.args.get("id_commande", "").strip()
     statut = request.args.get("statut", "")
     date_debut = request.args.get("date_debut", "")
     date_fin = request.args.get("date_fin", "")
 
-    query = "SELECT * FROM proformas WHERE 1=1"
-    params = []
-
-    if nom_client:
-        query += " AND nom_client LIKE ?"
-        params.append(f"%{nom_client}%")
-    if id_commande:
-        query += " AND id_commande LIKE ?"
-        params.append(f"%{id_commande}%")
-    if statut:
-        query += " AND statut = ?"
-        params.append(statut)
-    if date_debut:
-        query += " AND date_commande >= ?"
-        params.append(date_debut)
-    if date_fin:
-        query += " AND date_commande <= ?"
-        params.append(date_fin)
-
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute(query, params)
-    commandes = c.fetchall()
+    c.execute("SELECT * FROM proformas ORDER BY id ASC")
+    resultats = c.fetchall()
     conn.close()
 
     commandes_formatees = []
-    for commande in commandes:
-        commande_dict = dict(commande)
+    for cmd in resultats:
         try:
-            produits = json.loads(commande["produits"])
-            commande_dict["produits_liste"] = produits
-            commande_dict["produits"] = ", ".join([f"{p['titre']} (x{p['quantite']})" for p in produits])
+            produits = json.loads(cmd["produits"])
         except:
-            commande_dict["produits_liste"] = []
-            commande_dict["produits"] = "Erreur d'affichage"
-        commandes_formatees.append(commande_dict)
+            produits = []
 
-    return render_template("commandes_liste.html", commandes=commandes_formatees)
+        # Filtres actifs
+        if nom_client and nom_client not in cmd["nom_client"].lower():
+            continue
+        if id_commande and id_commande.lower() not in cmd["id_commande"].lower():
+            continue
+        if statut and statut != cmd["statut"]:
+            continue
+        if date_debut and cmd["date_generation"] < date_debut:
+            continue
+        if date_fin and cmd["date_generation"] > date_fin:
+            continue
+
+        commandes_formatees.append({
+            "id": cmd["id"],
+            "id_commande": cmd["id_commande"],
+            "nom_client": cmd["nom_client"],
+            "contact": cmd["contact"],
+            "type_client": cmd["type_client"],
+            "produits": produits,
+            "montant_total": cmd["montant_total"],
+            "statut": cmd["statut"],
+            "mode_livraison": cmd["mode_livraison"],
+            "frais_livraison": cmd["frais_livraison"],
+            "date_generation": cmd["date_generation"]
+        })
+
+    return render_template("commandes_liste.html",
+                           commandes=commandes_formatees,
+                           page=1,
+                           total_pages=1,
+                           pagination_links=[],
+                           per_page=len(commandes_formatees))
