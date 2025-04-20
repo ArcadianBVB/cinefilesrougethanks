@@ -8,10 +8,19 @@
 <body>
     <h2>Liste des Commandes & Proformas</h2>
 
-    <div style="text-align: right; margin-bottom: 10px;">
-        <a href="{{ url_for('commandes.nouvelle_commande') }}" class="btn-ajouter">+ Ajouter une commande</a>
-    </div>
+<br>
+<div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0;">
+    <a href="/commandes/nettoyer" 
+       style="color: #cc0000; font-weight: bold; font-size: 16px; text-decoration: none;">
+        Nettoyer les proformas expirés / invalides
+    </a>
 
+    <a href="/commandes/nouvelle" 
+       style="background-color: #28a745; color: white; font-size: 16px; font-weight: bold; 
+              padding: 10px 18px; border-radius: 5px; text-decoration: none;">
+        + Ajouter une commande
+    </a>
+</div>
     <form method="get" action="{{ url_for('commandes.rechercher_commandes') }}">
         <fieldset>
             <legend>Filtrer les commandes</legend>

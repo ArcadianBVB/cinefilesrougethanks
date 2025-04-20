@@ -158,6 +158,12 @@ def liste_commandes():
                            pagination_links=pagination_links,
                            per_page=per_page)
 
+@commandes_bp.route("/nettoyer", methods=["GET"])
+def lancer_nettoyage_manuel():
+    import subprocess
+    subprocess.run(["python", "nettoyage_proformas.py"])
+    return redirect(url_for('commandes.liste_commandes'))
+
 @commandes_bp.route("/search_products")
 def search_products():
     query = request.args.get('q', '')
