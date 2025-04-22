@@ -21,12 +21,22 @@
         .btn {
             margin-top: 20px;
         }
+        .btn a {
+            margin-right: 10px;
+            padding: 8px 12px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn a:hover {
+            background-color: #2980b9;
+        }
     </style>
 </head>
 <body>
     <h2>Aperçu du Proforma</h2>
 
-    <p><strong>ID interne :</strong> {{ proforma["id"] }}</p>
     <p><strong>ID Commande :</strong> {{ proforma["id_commande"] }}</p>
     <p><strong>Noms du client :</strong> {{ proforma["nom_client"] }}</p>
     <p><strong>Contact :</strong> {{ proforma["contact"] }}</p>
@@ -48,6 +58,7 @@
     <p><strong>Statut :</strong> {{ proforma["statut"] }}</p>
 
     <div class="btn">
+        <a href="{{ url_for('commandes.generer_pdf', proforma_id=proforma['id']) }}">Générer un PDF</a>
         <a href="{{ url_for('commandes.liste_commandes') }}">Retour à la liste</a>
     </div>
 </body>

@@ -1,9 +1,10 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+kfrom flask import Blueprint, render_template, request, redirect, url_for, jsonify
 import sqlite3
 from datetime import datetime, timedelta
-import random
-from flask import make_response
 from fpdf import FPDF
+from flask import send_file
+from io import BytesIO
+import random
 import string
 import json
 from base_price import calculer_prix
@@ -23,33 +24,20 @@ def get_pagination_links(page, total_pages, delta=2):
 
 @commandes_bp.route("/view/<int:proforma_id>")
 def view_proforma(proforma_id):
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect("stock.db")
     conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute("SELECT * FROM proformas WHERE id=?", (proforma_id,))
-    proforma = c.fetchone()
-    conn.close()
+    cur = conn.cursor()
 
-    if not proforma:
-        return "Commande non trouvée", 404
+    cur.execute("SELECT * FROM proformas WHERE id = ?", (proforma_id,))
+    proforma = cur.fetchone()
 
-    try:
+    produits = []
+    if proforma:
         produits = json.loads(proforma["produits"])
-    except:
-        produits = []
 
+    conn.close()
     return render_template("proforma_view.html", proforma=proforma, produits=produits)
 
-commandes_bp = Blueprint('commandes', __name__)
-DB_NAME = "stock.db"
-
-def generate_order_id():
-    # Génère un ID unique au format "IDYYYYMMDDXXXX"
-    date_str = datetime.now().strftime("%Y%m%d")
-    random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
-    order_id = f"ID{date_str}{random_str}"
-    print("Generated Order ID:", order_id)
-    return order_id
 
 @commandes_bp.route("/nouvelle", methods=["GET", "POST"])
 def nouvelle_commande():
@@ -109,66 +97,61 @@ def nouvelle_commande():
         return redirect(url_for("commandes.liste_commandes"))
     return render_template("nouvelle_commande.html")
 
+from fpdf import FPDF
+from flask import send_file
+import io
+
 @commandes_bp.route("/generer_pdf/<int:proforma_id>")
-def generer_pdf(proforma_id):
+def generer_pdf_proforma(proforma_id):
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute("SELECT * FROM proformas WHERE id=?", (proforma_id,))
-    proforma = c.fetchone()
-    conn.close()
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM proformas WHERE id = ?", (proforma_id,))
+    proforma = cur.fetchone()
 
     if not proforma:
         return "Commande introuvable", 404
 
-    try:
-        produits = json.loads(proforma["produits"])
-    except:
-        produits = []
+    produits = json.loads(proforma["produits"])
 
+    # Création du PDF
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
-
-    pdf.set_font("Arial", style="B", size=14)
-    pdf.cell(0, 10, "Fiche Proforma", ln=True, align="C")
+    pdf.set_font("Arial", "B", 16)
+    pdf.cell(0, 10, "PROFORMA - CINÉFILES", ln=True, align="C")
     pdf.ln(10)
 
-    infos = [
-        ("ID Commande", proforma["id_commande"]),
-        ("Nom client", proforma["nom_client"]),
-        ("Contact", proforma["contact"]),
-        ("Type client", proforma["type_client"]),
-        ("Livraison", proforma["mode_livraison"]),
-        ("Frais", f"{proforma['frais_livraison']} $"),
-        ("Observations", proforma["observations"]),
-        ("Date commande", proforma["date_commande"]),
-        ("Expiration", proforma["date_expiration"]),
-        ("Statut", proforma["statut"]),
-    ]
-    for label, val in infos:
-        pdf.set_font("Arial", style="B", size=12)
-        pdf.cell(50, 10, f"{label} :", ln=0)
-        pdf.set_font("Arial", size=12)
-        pdf.multi_cell(0, 10, str(val))
-
+    pdf.set_font("Arial", "", 12)
+    pdf.cell(0, 10, f"Nom du client : {proforma['nom_client']}", ln=True)
+    pdf.cell(0, 10, f"ID commande : {proforma['id']}", ln=True)
+    pdf.cell(0, 10, f"Contact : {proforma['contact']}", ln=True)
+    pdf.cell(0, 10, f"Date création : {proforma['date_creation']}", ln=True)
+    pdf.cell(0, 10, f"Date expiration : {proforma['date_expiration']}", ln=True)
+    pdf.cell(0, 10, f"Statut : {proforma['statut']}", ln=True)
     pdf.ln(5)
-    pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(0, 10, "Produits :", ln=True)
 
-    pdf.set_font("Arial", size=12)
+    pdf.set_font("Arial", "B", 13)
+    pdf.cell(0, 10, "Produits commandés :", ln=True)
+    pdf.set_font("Arial", "", 12)
+
     for p in produits:
-        ligne = f"{p['titre']} ({p['qualite']}) - {p['quantite']} x {p['prix']} $ = {p['total']} $"
-        pdf.multi_cell(0, 10, ligne)
-
+        titre = p['titre']
+        quantite = p['quantite']
+        prix_unitaire = p['prix_unitaire']
+        total = p['total']
+        pdf.cell(0, 10, f"- {titre} | Qte: {quantite} | PU: {prix_unitaire}$ | Total: {total}$", ln=True)
     pdf.ln(5)
-    pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(0, 10, f"Total : {proforma['montant_total']} $", ln=True)
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(0, 10, f"Total général : {proforma['montant_total']} $", ln=True, align="R")
 
-    response = make_response(pdf.output(dest="S").encode("latin1"))
-    response.headers["Content-Type"] = "application/pdf"
-    response.headers["Content-Disposition"] = f"inline; filename=proforma_{proforma_id}.pdf"
-    return response
+    # Exporter en mémoire
+    buffer = io.BytesIO()
+    pdf.output(buffer)
+    buffer.seek(0)
+
+    filename = f"proforma_{proforma_id}.pdf"
+    return send_file(buffer, as_attachment=True, download_name=filename, mimetype='application/pdf')
 
 @commandes_bp.route("/liste")
 def liste_commandes():
@@ -238,7 +221,7 @@ def search_products():
     return jsonify([{'titre': r[0], 'prix': r[1], 'qualite': r[2]} for r in results])
 
 @commandes_bp.route("/view/<int:proforma_id>")
-def view_proforma(proforma_id):
+def afficher_proforma(proforma_id):
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
