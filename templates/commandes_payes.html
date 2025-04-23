@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Proformas Payés</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        h2, h3 { color: #2c3e50; margin-top: 20px; }
+        .proforma { margin: 10px 0; padding: 8px; background: #ecf0f1; border-left: 5px solid #27ae60; }
+        .btn { padding: 8px 12px; background-color: #c0392b; color: white; text-decoration: none; border-radius: 4px; }
+        .btn:hover { background-color: #e74c3c; }
+    </style>
+</head>
+<body>
+    <h2>Proformas Validés (Payés)</h2>
+
+    <a href="{{ url_for('commandes.archiver_proformas_payes') }}" class="btn">Archiver les Proformas (+1 an)</a>
+
+    {% for annee, mois_data in groupes.items() %}
+        <h3>{{ annee }}</h3>
+        {% for mois, proformas in mois_data.items() %}
+            <h4>{{ mois }}</h4>
+            {% for p in proformas %}
+                <div class="proforma">
+                    <strong>{{ p["id_commande"] }}</strong> — {{ p["nom_client"] }}  
+                    | {{ p["montant_total"] }} $  
+                    | {{ p["date_generation"][:10] }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+    {% endfor %}
+
+    <br>
+    <a href="{{ url_for('commandes.liste_commandes') }}">Retour à la liste principale</a>
+</body>
+</html>

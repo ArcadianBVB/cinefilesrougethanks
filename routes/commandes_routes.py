@@ -3,7 +3,11 @@ import sqlite3
 from datetime import datetime, timedelta
 import random
 from flask import make_response
+from collections import defaultdict
+from datetime import datetime
 from fpdf import FPDF
+from flask import send_file
+import csv, os, zipfile
 import string
 import json
 from base_price import calculer_prix
@@ -50,6 +54,29 @@ def generate_order_id():
     order_id = f"ID{date_str}{random_str}"
     print("Generated Order ID:", order_id)
     return order_id
+
+@commandes_bp.route("/payes")
+def proformas_payes():
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM proformas_payes ORDER BY date_generation DESC")
+    resultats = c.fetchall()
+    conn.close()
+
+    # Catégorisation par année / mois
+    categories = defaultdict(lambda: defaultdict(list))
+
+    for row in resultats:
+        date_obj = datetime.strptime(row["date_generation"], "%Y-%m-%d %H:%M:%S")
+        annee = str(date_obj.year)
+        mois = date_obj.strftime("%B")  # Avril, Mai...
+        categories[annee][mois].append(row)
+
+    # Transformer defaultdict en dict ordonné pour le template
+    sorted_categories = dict(sorted(categories.items(), reverse=True))
+
+    return render_template("commandes_payes.html", groupes=sorted_categories)
 
 @commandes_bp.route("/nouvelle", methods=["GET", "POST"])
 def nouvelle_commande():
@@ -366,3 +393,48 @@ def rechercher_commandes():
                            total_pages=1,
                            pagination_links=[],
                            per_page=len(commandes_formatees))
+
+@commandes_bp.route("/archiver_proformas_payes")
+def archiver_proformas_payes():
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+
+    # Sélection des proformas payés vieux de plus d’un an
+    c.execute("""
+        SELECT * FROM proformas_payes
+        WHERE date_generation < datetime('now', '-1 year')
+    """)
+    lignes = c.fetchall()
+
+    if not lignes:
+        conn.close()
+        return "Aucun proforma validé à archiver."
+
+    # Création du dossier archives
+    os.makedirs("archives", exist_ok=True)
+
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    csv_filename = f"archives/proformas_payes_{date_str}.csv"
+    zip_filename = f"archives/proformas_payes_{date_str}.zip"
+
+    # Export CSV
+    with open(csv_filename, mode="w", newline="", encoding="utf-8") as file:
+        writer = csv.writer(file)
+        writer.writerow([col for col in lignes[0].keys()])
+        for row in lignes:
+            writer.writerow([row[col] for col in row.keys()])
+
+    # Compression ZIP
+    with zipfile.ZipFile(zip_filename, "w", zipfile.ZIP_DEFLATED) as zipf:
+        zipf.write(csv_filename)
+
+    # Suppression des lignes archivées
+    c.execute("""
+        DELETE FROM proformas_payes
+        WHERE date_generation < datetime('now', '-1 year')
+    """)
+    conn.commit()
+    conn.close()
+
+    return send_file(zip_filename, as_attachment=True)
