@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Exporter Proformas par Mois</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="container">
+    <h2>Exporter les Proformas Payés par Mois</h2>
+
+    <form method="POST">
+        <label for="annee">Choisissez une année :</label>
+        <select name="annee" id="annee" required>
+            {% for annee in range(2023, 2031) %}
+                <option value="{{ annee }}">{{ annee }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="mois">Choisissez un mois :</label>
+        <select name="mois" id="mois" required>
+            <option value="01">01 - Janvier</option>
+            <option value="02">02 - Février</option>
+            <option value="03">03 - Mars</option>
+            <option value="04">04 - Avril</option>
+            <option value="05">05 - Mai</option>
+            <option value="06">06 - Juin</option>
+            <option value="07">07 - Juillet</option>
+            <option value="08">08 - Août</option>
+            <option value="09">09 - Septembre</option>
+            <option value="10">10 - Octobre</option>
+            <option value="11">11 - Novembre</option>
+            <option value="12">12 - Décembre</option>
+        </select>
+
+        <br><br>
+        <button class="btn btn-info" type="submit">Exporter</button>
+    </form>
+
+    <a class="back-link" href="{{ url_for('commandes.proformas_payes') }}">Retour</a>
+</body>
+</html>

@@ -14,8 +14,19 @@
 <body>
     <h2>Proformas Validés (Payés)</h2>
 
-    <a href="{{ url_for('commandes.archiver_proformas_payes') }}" class="btn">Archiver les Proformas (+1 an)</a>
+<div class="boutons-action">
+    <a href="{{ url_for('commandes.archiver_proformas_payes') }}" class="btn btn-danger" style="margin-right: 10px;">
+        Archiver les Proformas (+1 an)
+    </a>
 
+    <a href="{{ url_for('exporter.exporter_proformas_par_annee') }}" class="btn btn-warning" style="margin-right: 10px;">
+        Exporter Proformas par Année
+    </a>
+
+    <a href="{{ url_for('exporter_mois.exporter_proformas_par_mois') }}" class="btn btn-info">
+        Exporter Proformas par Mois
+    </a>
+</div>
     {% for annee, mois_data in groupes.items() %}
         <h3>{{ annee }}</h3>
         {% for mois, proformas in mois_data.items() %}
