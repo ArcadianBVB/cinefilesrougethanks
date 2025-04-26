@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Exporter Proformas Payés</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="container">
+    <h2>Exporter les Proformas Payés par Année</h2>
+
+    <form method="POST">
+        <label for="annee">Choisissez une année :</label>
+        <select name="annee" id="annee" required>
+            {% for annee in range(2023, 2031) %}
+                <option value="{{ annee }}">{{ annee }}</option>
+            {% endfor %}
+        </select>
+
+        <br><br>
+        <button class="btn btn-warning" type="submit">Exporter</button>
+    </form>
+
+    <br>
+    <a class="back-link" href="{{ url_for('commandes.proformas_payes') }}">Retour</a>
+</body>
+</html>

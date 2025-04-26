@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmation Suppression</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="container">
+    <h2>Exportation terminée !</h2>
+    <p>Voulez-vous supprimer les Proformas Payés de l'année <strong>{{ annee }}</strong> ?</p>
+
+    <form method="POST" action="{{ url_for('exporter.confirmer_suppression_proformas', annee=annee) }}">
+        <div class="btn-group">
+            <button type="submit" name="action" value="supprimer" class="btn btn-success">Oui, Supprimer</button>
+            <button type="submit" name="action" value="annuler" class="btn btn-danger">Non, Garder</button>
+        </div>
+    </form>
+
+    <br>
+    <a class="back-link" href="{{ url_for('commandes.proformas_payes') }}">Retour à la liste des Payés</a>
+</body>
+</html>
