@@ -2,51 +2,115 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Proformas Validés</title>
+    <title>Proformas Validés (Payés)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .actions {
+            margin-bottom: 20px;
+        }
+        .actions a {
+            background-color: #e63946;
+            color: white;
+            padding: 8px 12px;
+            margin-right: 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background: #f9f9f9;
+        }
+        .card h3 {
+            margin-top: 0;
+            font-size: 18px;
+            color: #1d3557;
+        }
+        .card p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .pagination {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .pagination a {
+            margin: 0 5px;
+            padding: 8px 12px;
+            text-decoration: none;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            color: #333;
+            background-color: #f1f1f1;
+            font-size: 14px;
+        }
+        .pagination a.active {
+            background-color: #e63946;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
 <h2>Proformas Validés (Payés)</h2>
 
-<div style="margin-bottom: 20px;">
-    <a href="{{ url_for('commandes.archiver_proformas_payes') }}" class="btn btn-danger">Archiver (+1 an)</a>
-    <a href="{{ url_for('exporter.exporter_proformas_par_annee') }}" class="btn btn-danger">Exporter Proformas par Année</a>
-    <a href="{{ url_for('exporter.verifier_cle_exports') }}" class="btn btn-danger">Voir les Exports Disponibles</a>
+<div class="actions">
+    <a href="{{ url_for('commandes.archiver_proformas_payes') }}">Archiver (+1 an)</a>
+    <a href="{{ url_for('exporter.exporter_proformas_par_annee') }}">Exporter Proformas par Année</a>
+    <a href="{{ url_for('exporter.verifier_cle_exports') }}">Voir les Exports Disponibles</a>
 </div>
 
-<table border="1" cellpadding="5" cellspacing="0">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nom Client</th>
-            <th>Type Client</th>
-            <th>Montant Total</th>
-            <th>Date Commande</th>
-            <th>Date Génération</th>
-            <th>Année</th>
-            <th>Mois</th>
-            <th>Jour</th>
-            <th>Jour Semaine</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for proforma in proformas %}
-        <tr>
-            <td>{{ proforma.id_commande }}</td>
-            <td>{{ proforma.nom_client }}</td>
-            <td>{{ proforma.type_client }}</td>
-            <td>{{ proforma.montant_total }}</td>
-            <td>{{ proforma.date_commande }}</td>
-            <td>{{ proforma.date_generation }}</td>
-            <td>{{ proforma.annee }}</td>
-            <td>{{ proforma.mois }}</td>
-            <td>{{ proforma.jour }}</td>
-            <td>{{ proforma.jour_semaine }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="card-grid">
+    {% for proforma in proformas %}
+    <div class="card">
+        <h3>{{ proforma['nom_client'] }}</h3>
+        <p><strong>Type Client :</strong> {{ proforma['type_client'] }}</p>
+        <p><strong>Montant Total :</strong> {{ proforma['montant_total'] }} $</p>
+        <p><strong>Date Commande :</strong> {{ proforma['date_commande'] }}</p>
+        <p><strong>Date Validation :</strong> {{ proforma['date_generation'] }}</p>
+        <p><strong>Année :</strong> {{ proforma['annee'] }}</p>
+        <p><strong>Mois :</strong> {{ proforma['mois'] }}</p>
+        <p><strong>Jour :</strong> {{ proforma['jour'] }}</p>
+        <p><strong>Jour Semaine :</strong> {{ proforma['jour_semaine'] }}</p>
+    </div>
+    {% endfor %}
+</div>
 
+<div class="pagination">
+    {% if pagination.pages > 1 %}
+        {% if pagination.page > 1 %}
+            <a href="{{ url_for('commandes.proformas_payes', page=1) }}">« Premier</a>
+            <a href="{{ url_for('commandes.proformas_payes', page=pagination.page-1) }}">‹ Précédent</a>
+        {% endif %}
+
+        {% for p in range(1, pagination.pages + 1) %}
+            {% if p == pagination.page %}
+                <a href="{{ url_for('commandes.proformas_payes', page=p) }}" class="active">{{ p }}</a>
+            {% else %}
+                <a href="{{ url_for('commandes.proformas_payes', page=p) }}">{{ p }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.page < pagination.pages %}
+            <a href="{{ url_for('commandes.proformas_payes', page=pagination.page+1) }}">Suivant ›</a>
+            <a href="{{ url_for('commandes.proformas_payes', page=pagination.pages) }}">Dernier »</a>
+        {% endif %}
+    {% endif %}
+</div>
+
+<!-- Ensuite tu laisses finir tranquillement ton HTML -->
 <br>
 <a href="{{ url_for('commandes.liste_commandes') }}">Retour à la liste principale</a>
 

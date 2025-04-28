@@ -55,7 +55,7 @@ def generate_order_id():
     print("Generated Order ID:", order_id)
     return order_id
 
-@commandes_bp.route("/commandes/payes")
+@commandes_bp.route('/commandes/payes')
 def proformas_payes():
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
@@ -64,14 +64,24 @@ def proformas_payes():
     proformas = c.fetchall()
     conn.close()
 
+    # Pagination
+    page = int(request.args.get('page', 1))
+    par_page = 4  # 4 Proformas par page par exemple
+    total = len(proformas)
+    pages = (total + par_page - 1) // par_page  # Arrondi supérieur
+
+    start = (page - 1) * par_page
+    end = start + par_page
+    proformas_page = proformas[start:end]
+
     liste_proformas = []
-    for row in proformas:
+    for row in proformas_page:
         try:
             date_obj = datetime.strptime(row["date_generation"], "%Y-%m-%d %H:%M:%S")
             annee = str(date_obj.year)
-            mois = date_obj.strftime("%B")  # Avril, Mai...
+            mois = date_obj.strftime("%B")
             jour = str(date_obj.day)
-            jour_semaine = date_obj.strftime("%A")  # Lundi, Mardi...
+            jour_semaine = date_obj.strftime("%A")
         except:
             annee = ""
             mois = ""
@@ -81,24 +91,22 @@ def proformas_payes():
         liste_proformas.append({
             "id_commande": row["id_commande"],
             "nom_client": row["nom_client"],
-            "contact": row["contact"],
             "type_client": row["type_client"],
-            "produits": row["produits"],
             "montant_total": row["montant_total"],
-            "mode_livraison": row["mode_livraison"],
-            "frais_livraison": row["frais_livraison"],
-            "observations": row["observations"],
             "date_commande": row["date_commande"],
             "date_generation": row["date_generation"],
-            "date_expiration": row["date_expiration"],
-            "statut": row["statut"],
             "annee": annee,
             "mois": mois,
             "jour": jour,
             "jour_semaine": jour_semaine
         })
 
-    return render_template("commandes_payes.html", proformas=liste_proformas)
+    pagination = {
+        "page": page,
+        "pages": pages
+    }
+
+    return render_template("commandes_payes.html", proformas=liste_proformas, pagination=pagination)
 
 @commandes_bp.route("/nouvelle", methods=["GET", "POST"])
 def nouvelle_commande():
