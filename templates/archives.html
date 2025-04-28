@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Archives des Exports</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="container">
+    <h2>Archives Disponibles</h2>
+
+    {% if fichiers %}
+        <ul>
+            {% for fichier in fichiers %}
+                <li>
+                    <a href="{{ url_for('archives.telecharger_archive', filename=fichier) }}">
+                        {{ fichier }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Aucune archive disponible.</p>
+    {% endif %}
+
+    <a href="{{ url_for('commandes.proformas_payes') }}" class="btn btn-primary" style="margin-top: 20px;">Retour</a>
+</body>
+</html>

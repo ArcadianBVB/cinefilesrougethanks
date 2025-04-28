@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Vérification Clé Export</title>
+</head>
+<body>
+    <h2>Accès protégé aux Exports</h2>
+    <form method="POST">
+        <input type="password" name="cle_export" placeholder="Entrer la clé d'accès" required>
+        <button type="submit">Valider</button>
+    </form>
+    <br>
+    <a href="{{ url_for('commandes.proformas_payes') }}">Retour</a>
+</body>
+</html>

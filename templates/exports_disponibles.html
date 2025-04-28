@@ -1,0 +1,13 @@
+<h2>Liste des exports réalisés</h2>
+
+{% if dossiers %}
+<ul>
+  {% for fichier in dossiers %}
+    <li><a href="/archives/{{ fichier }}">{{ fichier }}</a></li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>Aucun fichier d'export disponible.</p>
+{% endif %}
+
+<a href="{{ url_for('commandes.liste_commandes') }}">Retour à la liste principale</a>

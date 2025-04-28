@@ -2,14 +2,22 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Exporter Proformas Payés</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Exporter Proformas par Année</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="container">
-    <h2>Exporter les Proformas Payés par Année</h2>
+    <h2>Exporter les Proformas Payés</h2>
 
-    <form method="POST">
-        <label for="annee">Choisissez une année :</label>
+    <h3>Accès protégé</h3>
+    <form method="POST" action="{{ url_for('exporter.verifier_cle_export') }}">
+        <input type="password" name="cle_secrete" placeholder="Entrer la clé d'accès" required style="padding: 8px; margin-right: 10px;">
+        <button type="submit" style="padding: 8px 12px; background-color: green; color: white; border: none;">Valider</button>
+    </form>
+
+    <hr>
+
+    <form method="POST" action="{{ url_for('exporter.exporter_proformas_par_annee') }}">
+        <label for="annee">Choisir une année :</label>
         <select name="annee" id="annee" required>
             {% for annee in range(2023, 2031) %}
                 <option value="{{ annee }}">{{ annee }}</option>
@@ -17,10 +25,42 @@
         </select>
 
         <br><br>
-        <button class="btn btn-warning" type="submit">Exporter</button>
+        <button type="submit" class="btn btn-warning">Exporter par Année</button>
     </form>
 
     <br>
-    <a class="back-link" href="{{ url_for('commandes.proformas_payes') }}">Retour</a>
+
+<form method="POST" action="{{ url_for('exporter.exporter_proformas_par_annee') }}">
+        <label for="annee">Choisir une année :</label>
+        <select name="annee" id="annee" required>
+            {% for annee in range(2023, 2031) %}
+                <option value="{{ annee }}">{{ annee }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="mois">Choisir un mois :</label>
+        <select name="mois" id="mois" required>
+            <option value="01">Janvier</option>
+            <option value="02">Février</option>
+            <option value="03">Mars</option>
+            <option value="04">Avril</option>
+            <option value="05">Mai</option>
+            <option value="06">Juin</option>
+            <option value="07">Juillet</option>
+            <option value="08">Août</option>
+            <option value="09">Septembre</option>
+            <option value="10">Octobre</option>
+            <option value="11">Novembre</option>
+            <option value="12">Décembre</option>
+        </select>
+
+        <br><br>
+        <button type="submit" class="btn btn-info">Exporter par Mois</button>
+    </form>
+
+    <br>
+
+    <a href="{{ url_for('commandes.proformas_payes') }}" class="btn btn-primary">Retour</a>
+
 </body>
 </html>

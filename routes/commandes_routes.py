@@ -55,28 +55,50 @@ def generate_order_id():
     print("Generated Order ID:", order_id)
     return order_id
 
-@commandes_bp.route("/payes")
+@commandes_bp.route("/commandes/payes")
 def proformas_payes():
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
-    c.execute("SELECT * FROM proformas_payes ORDER BY date_generation DESC")
-    resultats = c.fetchall()
+    c.execute("SELECT * FROM proformas_payes ORDER BY id ASC")
+    proformas = c.fetchall()
     conn.close()
 
-    # Catégorisation par année / mois
-    categories = defaultdict(lambda: defaultdict(list))
+    liste_proformas = []
+    for row in proformas:
+        try:
+            date_obj = datetime.strptime(row["date_generation"], "%Y-%m-%d %H:%M:%S")
+            annee = str(date_obj.year)
+            mois = date_obj.strftime("%B")  # Avril, Mai...
+            jour = str(date_obj.day)
+            jour_semaine = date_obj.strftime("%A")  # Lundi, Mardi...
+        except:
+            annee = ""
+            mois = ""
+            jour = ""
+            jour_semaine = ""
 
-    for row in resultats:
-        date_obj = datetime.strptime(row["date_generation"], "%Y-%m-%d %H:%M:%S")
-        annee = str(date_obj.year)
-        mois = date_obj.strftime("%B")  # Avril, Mai...
-        categories[annee][mois].append(row)
+        liste_proformas.append({
+            "id_commande": row["id_commande"],
+            "nom_client": row["nom_client"],
+            "contact": row["contact"],
+            "type_client": row["type_client"],
+            "produits": row["produits"],
+            "montant_total": row["montant_total"],
+            "mode_livraison": row["mode_livraison"],
+            "frais_livraison": row["frais_livraison"],
+            "observations": row["observations"],
+            "date_commande": row["date_commande"],
+            "date_generation": row["date_generation"],
+            "date_expiration": row["date_expiration"],
+            "statut": row["statut"],
+            "annee": annee,
+            "mois": mois,
+            "jour": jour,
+            "jour_semaine": jour_semaine
+        })
 
-    # Transformer defaultdict en dict ordonné pour le template
-    sorted_categories = dict(sorted(categories.items(), reverse=True))
-
-    return render_template("commandes_payes.html", groupes=sorted_categories)
+    return render_template("commandes_payes.html", proformas=liste_proformas)
 
 @commandes_bp.route("/nouvelle", methods=["GET", "POST"])
 def nouvelle_commande():

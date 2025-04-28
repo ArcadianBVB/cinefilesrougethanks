@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, send_file, redirect, url_for
 import sqlite3
 import csv
 import os
@@ -16,24 +16,18 @@ def exporter_proformas_par_mois():
         mois = request.form.get("mois")
 
         if not annee or not mois:
-            return "Erreur : Veuillez choisir une année et un mois."
+            return "Erreur : veuillez sélectionner une année et un mois."
 
         conn = sqlite3.connect(DB_NAME)
         conn.row_factory = sqlite3.Row
         c = conn.cursor()
 
-        # Correction ici pour bien extraire l'année et le mois
-        c.execute("""
-            SELECT * FROM proformas_payes 
-            WHERE strftime('%Y', date_commande) = ? 
-            AND strftime('%m', date_commande) = ?
-        """, (annee, mois))
-        
+        c.execute("SELECT * FROM proformas_payes WHERE annee = ? AND mois = ?", (annee, mois))
         proformas = c.fetchall()
         conn.close()
 
         if not proformas:
-            return f"Aucun proforma trouvé pour {mois}/{annee}."
+            return f"Aucun proforma payé trouvé pour {mois}/{annee}."
 
         os.makedirs("archives", exist_ok=True)
         date_now = datetime.now().strftime("%Y-%m-%d")
@@ -49,6 +43,6 @@ def exporter_proformas_par_mois():
         with zipfile.ZipFile(zip_filename, "w", zipfile.ZIP_DEFLATED) as zipf:
             zipf.write(csv_filename)
 
-        return f"Export terminé pour {mois}/{annee}. Fichier CSV + ZIP créé."
+        return render_template("exporter_supprimer_proformas_payes.html")
 
-    return render_template("exporter_mois_proformas_payes.html")
+    return redirect(url_for('commandes.proformas_payes'))

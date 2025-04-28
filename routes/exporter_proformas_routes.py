@@ -1,9 +1,11 @@
-from flask import Blueprint, render_template, request, send_file, redirect, url_for
+from flask import Blueprint, render_template, request, send_file, redirect, url_for, session
+from flask import send_from_directory
 import sqlite3
 import csv
 import os
 import zipfile
 from datetime import datetime
+CLE_EXPORT = "cinefiles2025"
 
 exporter_bp = Blueprint('exporter', __name__)
 
@@ -58,3 +60,41 @@ def confirmer_suppression_proformas(annee):
         return f"Les proformas payés de l'année {annee} ont été supprimés avec succès."
     else:
         return redirect(url_for('commandes.proformas_payes'))
+
+@exporter_bp.route("/verifier_cle_export", methods=["POST"])
+def verifier_cle_export():
+    cle = request.form.get("cle_secrete")
+    if cle == "cinefiles2025":  # <<< ici ta clé secrète
+        return redirect(url_for('exporter.afficher_exports'))
+    else:
+        return "Clé incorrecte, accès refusé.", 403
+
+@exporter_bp.route("/exports_disponibles")
+def afficher_exports():
+    return render_template("exports_disponibles.html")
+
+# --- Ajout de la vérification de clé d'export ---
+
+@exporter_bp.route("/verifier_cle_exports", methods=["GET", "POST"])
+def verifier_cle_exports():
+    if request.method == "POST":
+        cle_saisie = request.form.get("cle_export")
+        if cle_saisie == CLE_EXPORT:
+            session['export_autorise'] = True
+            return redirect(url_for('exporter.liste_exports'))
+        else:
+            return redirect(url_for('exporter.verifier_cle_exports'))
+    return render_template("verifier_cle_exports.html")
+
+@exporter_bp.route("/liste_exports")
+def liste_exports():
+    if not session.get("export_autorise"):
+        return redirect(url_for("exporter.verifier_cle_exports"))
+
+    dossiers = os.listdir("archives") if os.path.exists("archives") else []
+    dossiers = sorted([f for f in dossiers if f.endswith(".zip") or f.endswith(".csv")], reverse=True)
+    return render_template("exports_disponibles.html", dossiers=dossiers)
+
+@exporter_bp.route('/archives/<path:filename>')
+def download_archive(filename):
+    return send_from_directory('archives', filename)

@@ -1,0 +1,2 @@
+id,id_commande,nom_client,contact,type_client,produits,montant_total,mode_livraison,frais_livraison,observations,date_commande,date_generation,date_expiration,statut,annee,mois,jour,jour_semaine
+7,ID20230801B002,Gédéon,000000000,Particulier,Produit A,3.0,Livraison express,0.0,RAS,2023-08-01,2023-08-01,2023-09-01,Payé,2023,08,01,Mardi
