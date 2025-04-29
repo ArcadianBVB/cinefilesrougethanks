@@ -1,0 +1,5 @@
+id,id_commande,nom_client,contact,type_client,produits,montant_total,mode_livraison,frais_livraison,observations,date_commande,date_generation,date_expiration,statut,annee,mois,jour,jour_semaine
+5,1,Client Alpha,,National,,120.0,,,,2025-03-05,2025-03-06,2025-06-06,Payé,2025,3,6,Jeudi
+6,2,Client Bravo,,International,,230.0,,,,2025-02-10,2025-02-11,2025-05-11,Payé,2025,2,11,Mardi
+7,3,Client Charlie,,National,,150.0,,,,2025-01-15,2025-01-16,2025-04-16,Payé,2025,1,16,Jeudi
+8,4,Client Delta,,International,,300.0,,,,2025-04-10,2025-04-11,2025-07-11,Payé,2025,4,11,Vendredi
